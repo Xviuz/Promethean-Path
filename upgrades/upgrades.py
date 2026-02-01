@@ -1,5 +1,11 @@
 import random
-from config import MAX_PERCENT_UPGRADE, XP_BASE
+try:
+    from config import MAX_PERCENT_UPGRADE, XP_BASE
+except Exception:
+    # So this module can be executed directly (python upgrades/upgrades.py)
+    import sys, os
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from config import MAX_PERCENT_UPGRADE, XP_BASE
 
 
 def generate_upgrade_options(level):
@@ -13,11 +19,13 @@ def generate_upgrade_options(level):
         ("-5% Vel. Enemigos", "enemy_speed"),
         ("-20% Spawn Rápido", "spawn_time"),
         ("+10% Reg. Salud", "hp_regen"),
+        ("Golpe en Área (+1 daño)", "area_strike"),
+        ("+10% Área", "area_radius"),
     ]
     
     # Mostrar opción de XP en nivel 2 y cada 4 niveles después
     if level >= 2 and (level - 2) % 4 == 0:
-        all_upgrades.append(("+10% XP", "xp_mult"))
+        all_upgrades.append(("+30% XP", "xp_mult"))
     
     # Seleccionar 3 opciones al azar
     return random.sample(all_upgrades, min(3, len(all_upgrades)))
@@ -45,4 +53,14 @@ def apply_upgrade(game, upgrade_type):
     elif upgrade_type == "spawn_time":
         game["spawn_time_mult"] -= 0.20
     elif upgrade_type == "xp_mult":
-        game["xp_mult"] += 0.10
+        game["xp_mult"] += 0.30
+    elif upgrade_type == "area_strike":
+        # Habilita golpe en área y aumenta daño en 1 por selección
+        game["area_strike_power"] = game.get("area_strike_power", 0) + 1
+        game["area_strike_enabled"] = True
+        # Si no hay radio base, asignar la mitad del radio de ataque del jugador
+        if game.get("area_strike_radius", 0) == 0:
+            game["area_strike_radius"] = game.get("attack_radius", 0) * 0.5
+    elif upgrade_type == "area_radius":
+        # Aumenta el radio del golpe en área en 10% por selección
+        game["area_strike_radius_mult"] = game.get("area_strike_radius_mult", 0.0) + 0.10
