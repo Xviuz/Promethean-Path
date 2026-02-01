@@ -31,6 +31,9 @@ Instalación de pygame:
 
 ```bash
 pip install pygame
+```
+
+
 Cómo jugar
 Ejecuta main.py:
 
